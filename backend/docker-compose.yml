@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_DATABASE: taskmanager  # 数据库名
+      MYSQL_USER: user             # 普通用户名
+      MYSQL_PASSWORD: user         # 普通用户密码
+      MYSQL_ROOT_PASSWORD: root    # root 用户密码
+      TZ: Asia/Shanghai            # 设置时区为上海
+    ports:
+      - "3306:3306"                # 将容器的 3306 端口映射到主机
+    volumes:
+      - D:/dockersave/mysql_data_py:/var/lib/mysql
+    command: >                     # 配置 MySQL 参数
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --bind-address=0.0.0.0
+    restart: unless-stopped        # 如果容器异常停止，自动重启
+    healthcheck:                   # 健康检查，确保 MySQL 服务可用
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin:latest       # 使用最新版本的 phpMyAdmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql              # 指定 MySQL 服务的主机名
+      PMA_PORT: 3306               # MySQL 服务的端口
+    ports:
+      - "8888:80"                  # 将 phpMyAdmin 的 Web 界面映射到主机的 8080 端口
+    depends_on:
+      - mysql                      # 确保 phpMyAdmin 在 MySQL 服务启动后才启动
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge                 # 创建一个桥接网络，确保两个服务可以互相通信
