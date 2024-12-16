@@ -1,3 +1,5 @@
+<!-- src/components/Login.vue -->
+
 <template>
   <div class="login">
     <h2>登录</h2>
@@ -12,6 +14,9 @@
       </div>
       <button type="submit">登录</button>
     </form>
+    <p>
+      没有账号？ <router-link to="/register">注册</router-link>
+    </p>
   </div>
 </template>
 
@@ -31,11 +36,11 @@ export default {
 
     const login = async () => {
       try {
-        await store.dispatch('login', {
+        await store.dispatch('auth/login', {
           username: username.value,
           password: password.value,
         });
-        router.push('/');
+        router.push('/'); // 登录成功后重定向到仪表盘
       } catch (error) {
         console.error(error);
         alert('登录失败，请检查用户名和密码。');

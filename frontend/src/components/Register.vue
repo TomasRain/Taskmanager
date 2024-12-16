@@ -1,3 +1,5 @@
+<!-- src/components/Register.vue -->
+
 <template>
   <div class="register">
     <h2>注册</h2>
@@ -20,6 +22,9 @@
       </div>
       <button type="submit">注册</button>
     </form>
+    <p>
+      已有账号？ <router-link to="/login">登录</router-link>
+    </p>
   </div>
 </template>
 
@@ -29,7 +34,7 @@ import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 
 export default {
-  name: "Register",
+  name: "RegisterPage", // 修改组件名称以符合 ESLint 规则
   setup() {
     const store = useStore();
     const router = useRouter();
@@ -40,14 +45,19 @@ export default {
     const password2 = ref("");
 
     const register = async () => {
+      if (password.value !== password2.value) {
+        alert("密码不匹配。");
+        return;
+      }
+
       try {
-        await store.dispatch("register", {
+        await store.dispatch("auth/register", {
           username: username.value,
           email: email.value,
           password: password.value,
           password2: password2.value,
         });
-        router.push("/login");
+        router.push("/"); // 注册成功后重定向到仪表盘
       } catch (error) {
         console.error(error);
         alert("注册失败，请检查输入信息。");

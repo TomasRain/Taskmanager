@@ -1,6 +1,8 @@
+// src/router/index.js
+
 import { createRouter, createWebHistory } from 'vue-router';
 import Login from '../components/Login.vue';
-import Register from '../components/Register.vue';
+import RegisterPage from '../components/Register.vue'; // 使用 RegisterPage 名称
 import Dashboard from '../components/Dashboard.vue';
 import ProjectList from '../components/ProjectList.vue';
 import TaskList from '../components/TaskList.vue';
@@ -20,8 +22,8 @@ const routes = [
   },
   {
     path: '/register',
-    name: 'Register',
-    component: Register,
+    name: 'RegisterPage',
+    component: RegisterPage,
   },
   {
     path: '/projects',
@@ -44,7 +46,13 @@ const router = createRouter({
 
 // 路由守卫，检查是否需要认证
 router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !store.getters.isAuthenticated) {
+  const requiresAuth = to.meta.requiresAuth;
+  const isAuthenticated = store.getters['auth/isAuthenticated'];
+
+  console.log(`访问路由: ${to.path}, 需要认证: ${requiresAuth}, 已认证: ${isAuthenticated}`);
+
+  if (requiresAuth && !isAuthenticated) {
+    console.log('未认证，重定向到登录页');
     next('/login');
   } else {
     next();
