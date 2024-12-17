@@ -1,5 +1,3 @@
-<!-- src/components/Register.vue -->
-
 <template>
   <div class="register">
     <h2>注册</h2>
@@ -34,7 +32,7 @@ import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 
 export default {
-  name: "RegisterPage", // 修改组件名称以符合 ESLint 规则
+  name: "RegisterPage",
   setup() {
     const store = useStore();
     const router = useRouter();

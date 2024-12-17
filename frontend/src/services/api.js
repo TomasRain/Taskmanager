@@ -6,7 +6,7 @@ import router from '../router';
 
 // 创建一个 Axios 实例
 const api = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL || '/api/', // 使用环境变量或默认值
+  baseURL: process.env.VUE_APP_API_BASE_URL || 'http://localhost:8000/api/', // 使用环境变量或默认值，修改 baseURL
 });
 
 // 请求拦截器，在每个请求中添加 Authorization 头
@@ -35,24 +35,24 @@ api.interceptors.response.use(
 
       if (refreshToken) {
         try {
-          const response = await axios.post('/api/token/refresh/', {
+          const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/token/refresh/`, {  // 确保使用正确的 URL
             refresh: refreshToken,
           });
 
           const newAccessToken = response.data.access;
-          store.commit('auth/SET_TOKEN', newAccessToken);
-          localStorage.setItem('token', newAccessToken);
+          store.commit('auth/SET_TOKEN', newAccessToken); // 更新 Vuex 状态
+          localStorage.setItem('token', newAccessToken);   // 更新 localStorage
 
           originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-          return api(originalRequest);
+          return api(originalRequest); // 重新发起请求
         } catch (err) {
           console.error('刷新 Token 失败:', err);
-          store.dispatch('auth/logout');
-          router.push('/login');
+          store.dispatch('auth/logout'); // 刷新失败，退出登录
+          router.push('/login');          // 跳转到登录页
           return Promise.reject(err);
         }
       } else {
-        store.dispatch('auth/logout');
+        store.dispatch('auth/logout');  // 如果没有 refresh token，登出
         router.push('/login');
       }
     }
