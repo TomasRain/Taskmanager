@@ -11,6 +11,11 @@ import store from '../store';
 const routes = [
   {
     path: '/',
+    name: 'Home',
+    redirect: '/dashboard', // 将 '/' 重定向到 '/dashboard'
+  },
+  {
+    path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard,
     meta: { requiresAuth: true },  // 仪表盘需要认证

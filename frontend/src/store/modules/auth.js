@@ -1,10 +1,10 @@
 // src/store/modules/auth.js
 
-import api from '../../services/api';  // 确保 api.js 中正确设置了基础路径
+import api from '../../services/api';
 
 const state = {
-  token: localStorage.getItem('token') || '',  // 获取 token
-  refresh_token: localStorage.getItem('refresh_token') || '',  // 获取 refresh_token
+  token: localStorage.getItem('token') || '',
+  refresh_token: localStorage.getItem('refresh_token') || '',
   user: {},
 };
 
@@ -26,57 +26,95 @@ const mutations = {
 };
 
 const actions = {
+  // 检查用户名是否可用
+  async checkUsername({ commit }, username) {
+    try {
+      const response = await api.get(`check-username/${username}/`);
+      return response.data; // { available: true/false }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+
+  // 检查邮箱是否可用
+  async checkEmail({ commit }, email) {
+    try {
+      const response = await api.get(`check-email/${encodeURIComponent(email)}/`);
+      return response.data; // { available: true/false }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  },
+
+  // 注册用户
   async register({ commit, dispatch }, userData) {
     try {
-      const response = await api.post('register/', userData);  // 调用后端注册 API
+      const response = await api.post('register/', userData);
       const { access, refresh } = response.data;
-      localStorage.setItem('token', access);  // 将 token 存入 localStorage
-      localStorage.setItem('refresh_token', refresh);  // 将 refresh_token 存入 localStorage
-      commit('SET_TOKEN', access);  // 设置 state 中的 token
-      commit('SET_REFRESH_TOKEN', refresh);  // 设置 state 中的 refresh_token
-      await dispatch('fetchUser');  // 获取用户信息
+      localStorage.setItem('token', access);
+      localStorage.setItem('refresh_token', refresh);
+      commit('SET_TOKEN', access);
+      commit('SET_REFRESH_TOKEN', refresh);
+      await dispatch('fetchUser');
       return response;
     } catch (error) {
       console.error(error);
-      throw error;  // 失败时抛出错误
+      if (error.response && error.response.data) {
+        // 提取并返回具体的错误信息
+        throw error.response.data;
+      }
+      throw error;
     }
   },
+
+  // 登录用户
   async login({ commit, dispatch }, credentials) {
     try {
-      const response = await api.post('token/', credentials);  // 调用后端登录 API
+      const response = await api.post('token/', credentials);
       const { access, refresh } = response.data;
-      localStorage.setItem('token', access);  // 存储 token
-      localStorage.setItem('refresh_token', refresh);  // 存储 refresh_token
-      commit('SET_TOKEN', access);  // 更新 token
-      commit('SET_REFRESH_TOKEN', refresh);  // 更新 refresh_token
-      await dispatch('fetchUser');  // 获取用户信息
+      localStorage.setItem('token', access);
+      localStorage.setItem('refresh_token', refresh);
+      commit('SET_TOKEN', access);
+      commit('SET_REFRESH_TOKEN', refresh);
+      await dispatch('fetchUser');
       return response;
     } catch (error) {
       console.error(error);
-      throw error;  // 登录失败抛出错误
+      if (error.response && error.response.data) {
+        // 提取并返回具体的错误信息
+        throw error.response.data;
+      }
+      throw error;
     }
   },
+
+  // 登出用户
   logout({ commit }) {
-    commit('CLEAR_AUTH');  // 清空 token 和用户信息
-    localStorage.removeItem('token');  // 删除 localStorage 中的 token
-    localStorage.removeItem('refresh_token');  // 删除 refresh_token
+    commit('CLEAR_AUTH');
+    localStorage.removeItem('token');
+    localStorage.removeItem('refresh_token');
   },
+
+  // 获取用户信息
   async fetchUser({ commit, state, dispatch }) {
     if (state.token) {
       try {
-        const response = await api.get('user/');  // 调用获取用户信息 API
-        commit('SET_USER', response.data);  // 存储用户信息到 state
+        const response = await api.get('user/');
+        commit('SET_USER', response.data);
       } catch (error) {
         console.error(error);
-        dispatch('logout');  // 获取用户信息失败时清除认证信息
+        // 如果获取用户信息失败，可能 Token 无效，触发登出
+        dispatch('logout');
       }
     }
   },
 };
 
 const getters = {
-  isAuthenticated: (state) => !!state.token,  // 判断用户是否已认证
-  getUser: (state) => state.user,  // 获取用户信息
+  isAuthenticated: (state) => !!state.token,
+  getUser: (state) => state.user,
 };
 
 export default {

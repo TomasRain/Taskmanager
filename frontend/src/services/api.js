@@ -6,7 +6,10 @@ import router from '../router';
 
 // 创建一个 Axios 实例
 const api = axios.create({
-  baseURL: process.env.VUE_APP_API_BASE_URL || 'http://localhost:8000/api/', // 使用环境变量或默认值，修改 baseURL
+  baseURL: process.env.VUE_APP_API_BASE_URL || '/api/', // 使用环境变量或默认值
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
 // 请求拦截器，在每个请求中添加 Authorization 头
@@ -35,7 +38,7 @@ api.interceptors.response.use(
 
       if (refreshToken) {
         try {
-          const response = await axios.post(`${process.env.VUE_APP_API_BASE_URL}/token/refresh/`, {  // 确保使用正确的 URL
+          const response = await axios.post('/api/token/refresh/', {
             refresh: refreshToken,
           });
 
